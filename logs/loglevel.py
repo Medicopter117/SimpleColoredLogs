@@ -9,13 +9,20 @@ from colorama import Fore, Style, Back
 
 class LogLevel(IntEnum):
     """Log-Level Definitionen"""
-    TRACE = -1
-    DEBUG = 0
-    INFO = 1
-    SUCCESS = 2
-    WARN = 3
-    ERROR = 4
-    FATAL = 5
+    TRACE = -1      # Sehr detaillierte Debug-Infos
+    DEBUG = 0       # Entwickler-Informationen
+    INFO = 1        # Allgemeine Informationen
+    SUCCESS = 2     # Erfolgreiche Operationen
+    LOADING = 3     # Startet Lade-Vorgang
+    PROCESSING = 4  # Verarbeitet gerade
+    PROGRESS = 5    # Fortschritts-Update (z.B. 45%)
+    WAITING = 6     # Wartet auf Ressource/Response
+    NOTICE = 7      # Wichtige Hinweise (zwischen INFO und WARN)
+    WARN = 8        # Warnungen
+    ERROR = 9       # Fehler
+    CRITICAL = 10   # Kritische Fehler (noch behebbar)
+    FATAL = 11      # Fatale Fehler (Programm-Absturz)
+    SECURITY = 12   # Sicherheitsrelevante Events
 
 
 class LogFormat(IntEnum):
@@ -34,9 +41,16 @@ class LevelColors:
         LogLevel.DEBUG: Fore.CYAN,
         LogLevel.INFO: Fore.WHITE,
         LogLevel.SUCCESS: Fore.GREEN,
+        LogLevel.LOADING: Fore.BLUE,
+        LogLevel.PROCESSING: Fore.LIGHTCYAN_EX,
+        LogLevel.PROGRESS: Fore.LIGHTBLUE_EX,
+        LogLevel.WAITING: Fore.LIGHTYELLOW_EX,
+        LogLevel.NOTICE: Fore.LIGHTMAGENTA_EX,
         LogLevel.WARN: Fore.YELLOW,
         LogLevel.ERROR: Fore.RED,
+        LogLevel.CRITICAL: Fore.MAGENTA,
         LogLevel.FATAL: Fore.WHITE + Back.RED,
+        LogLevel.SECURITY: Fore.BLACK + Back.YELLOW,
     }
     
     @classmethod
