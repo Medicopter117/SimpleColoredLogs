@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "SimpleColoredLogs"
+version = "1.0.5"
+description = "Ein minimalistischer, farbiger Terminal-Logger"
+readme = "README.md"
+authors = [
+    {name = "OPPRO.NET Development" }
+
+]
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.7"
+dependencies = [
+    "colorama>=0.4.6"
+]
