@@ -49,10 +49,8 @@ Ein vollständiger, produktionsreifer Logger mit erweiterten Features für Pytho
 ## 📦 Installation
 
 ```bash
-pip install colorama
+pip install SimpleColoredLogs
 ```
-
-Dann einfach `logs.py` in dein Projekt kopieren.
 
 ## 🎯 Quick Start
 
