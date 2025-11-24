@@ -1,11 +1,12 @@
 """
-Logs - Professional Terminal Logger
-Ein vollständiger, produktionsreifer Logger mit erweiterten Features
-PyNum Style Naming Convention
+logs.py
+
+Professional Terminal Logger mit erweiterten Features
+Ein vollständiger, produktionsreifer Logger, der log_categories.py importiert.
 """
 
 from datetime import datetime
-from typing import Optional, Callable, Dict, Any, List, Union
+from typing import Optional, Callable, Dict, Any, List, Union, ClassVar
 from pathlib import Path
 import sys
 import threading
@@ -16,46 +17,35 @@ import os
 import time
 import atexit
 from collections import defaultdict, deque
+from enum import IntEnum, Enum
 
 from colorama import Fore, Style, Back, init
 
-# === NEUE DEFINITIONEN START ===
+# WICHTIG: Kategorien aus der separaten Datei importieren
+from log_categories import Category, CategoryColors 
 
-from enum import IntEnum
-# from colorama import Fore, Style, Back # colorama wird schon oben importiert
+# Colorama initialisieren
+init(autoreset=True)
 
-# Achtung: Category und CategoryColors müssen noch definiert sein, falls sie nicht im Code sind
-class Category(IntEnum):
-    """Platzhalter für Category, falls sie nicht definiert ist"""
-    SYSTEM = 0
-    DATABASE = 1
-    NETWORK = 2
-    USER = 3
-    DEFAULT = 99
 
-class CategoryColors:
-    """Platzhalter für CategoryColors"""
-    @classmethod
-    def get_color(cls, category: Category) -> str:
-        return Fore.WHITE
-
+## 🚀 LOG LEVEL DEFINITIONEN
 
 class LogLevel(IntEnum):
     """Log-Level Definitionen"""
-    TRACE = -1      # Sehr detaillierte Debug-Infos
-    DEBUG = 0       # Entwickler-Informationen
-    INFO = 1        # Allgemeine Informationen
-    SUCCESS = 2     # Erfolgreiche Operationen
-    LOADING = 3     # Startet Lade-Vorgang
-    PROCESSING = 4  # Verarbeitet gerade
-    PROGRESS = 5    # Fortschritts-Update (z.B. 45%)
-    WAITING = 6     # Wartet auf Ressource/Response
-    NOTICE = 7      # Wichtige Hinweise (zwischen INFO und WARN)
-    WARN = 8        # Warnungen
-    ERROR = 9       # Fehler
-    CRITICAL = 10   # Kritische Fehler (noch behebbar)
-    FATAL = 11      # Fatale Fehler (Programm-Absturz)
-    SECURITY = 12   # Sicherheitsrelevante Events
+    TRACE = -1      
+    DEBUG = 0       
+    INFO = 1        
+    SUCCESS = 2     
+    LOADING = 3     
+    PROCESSING = 4  
+    PROGRESS = 5    
+    WAITING = 6     
+    NOTICE = 7      
+    WARN = 8        
+    ERROR = 9       
+    CRITICAL = 10   
+    FATAL = 11      
+    SECURITY = 12   
 
 
 class LogFormat(IntEnum):
@@ -91,40 +81,12 @@ class LevelColors:
         """Gibt die Farbe für ein Log-Level zurück"""
         return cls.COLORS.get(level, Fore.WHITE)
 
-# === NEUE DEFINITIONEN ENDE ===
 
-
-# Colorama initialisieren
-init(autoreset=True)
-
+## 💻 LOGS HAUPTKLASSE
 
 class Logs:
     """
     Professional Terminal Logger mit erweiterten Features
-    
-    Features:
-    - 🎨 Farbige Terminal-Ausgabe mit 90+ Standard-Kategorien
-    - 📁 File-Logging mit automatischer Rotation
-    - 🎯 Level-Filtering & Kategorie-Filtering
-    - 🔍 Metadaten (Dateiname, Zeile, Funktion)
-    - 🧵 Thread-safe mit Lock
-    - 📊 JSON-Export für Log-Aggregation
-    - ⚡ Performance-Tracking & Profiling
-    - 🎭 Context-Manager für verschachtelte Logs
-    - 📝 Strukturierte Logs mit Key-Value Pairs
-    - 📈 Live-Statistiken & Dashboards
-    - 🔔 Alert-System für kritische Fehler
-    - 🎬 Session-Recording
-    - 🔄 Buffer-System für Batch-Logging
-    - 🔒 Sensitive Data Redaction
-    - 🌐 Distributed Tracing (Correlation/Trace/Span IDs)
-    - 📡 Remote Log Forwarding (Syslog)
-    - 🎲 Sampling & Rate Limiting
-    - 🧠 Adaptive Logging (Auto-Level-Adjustment)
-    - 🗜️ Log Compression
-    - 🏥 Health Checks
-    - 🔍 Debug Tools (tail, grep)
-    - 📊 Prometheus Metrics Export
     """
     
     # === Konfiguration ===
@@ -316,7 +278,8 @@ class Logs:
     def _get_metadata(cls, frame_depth: int) -> Dict[str, Any]:
         """Holt Metadaten vom Aufrufer"""
         try:
-            frame = inspect.stack()[frame_depth]
+            # frame_depth = 4, da 0=inspect.stack, 1=_get_metadata, 2=_log, 3=public_method, 4=caller
+            frame = inspect.stack()[frame_depth] 
             metadata = {
                 "file": Path(frame.filename).name,
                 "line": frame.lineno,
@@ -336,12 +299,12 @@ class Logs:
             return {"file": "", "line": 0, "function": "", "thread": None}
     
     @classmethod
-    def _format_json(cls, level: LogLevel, category: str, message: str, metadata: Dict[str, Any], extra: Optional[Dict] = None) -> str:
+    def _format_json(cls, level: LogLevel, category: Category, message: str, metadata: Dict[str, Any], extra: Optional[Dict] = None) -> str:
         """Formatiert Log als JSON"""
         log_entry = {
             "timestamp": datetime.now().isoformat(),
             "level": level.name,
-            "category": category,
+            "category": category.value, # Kategorie als String-Wert
             "message": message,
             **metadata
         }
@@ -352,11 +315,13 @@ class Logs:
         return json.dumps(log_entry, ensure_ascii=False)
     
     @classmethod
-    def _format_colored(cls, level: LogLevel, category: str, message: str, metadata: Dict[str, Any], extra: Optional[Dict] = None) -> str:
+    def _format_colored(cls, level: LogLevel, category: Category, message: str, metadata: Dict[str, Any], extra: Optional[Dict] = None) -> str:
         """Formatiert farbigen Log-Output"""
         level_name = level.name
         level_color = LevelColors.get_color(level)
-        category_color = CategoryColors.get_color(Category(category))
+        
+        # Kategorie Farbe aus importierter Klasse
+        category_color = CategoryColors.get_color(category) 
         
         # Timestamp
         timestamp_part = ""
@@ -365,11 +330,11 @@ class Logs:
             timestamp_part = f"{Style.DIM}[{ts}]{Style.RESET_ALL} "
         
         # Level - FETT und in Klammern
-        padded_level = f"{level_name:<10}" # Padding an die längsten Namen angepasst
+        padded_level = f"{level_name:<10}"
         level_part = f"{level_color}{Style.BRIGHT}[{padded_level}]{Style.RESET_ALL}"
         
         # Category mit Farbe
-        category_part = f"{category_color}[{category}]{Style.RESET_ALL}"
+        category_part = f"{category_color}[{category.value}]{Style.RESET_ALL}"
         
         # Kontext
         context_part = ""
@@ -405,19 +370,20 @@ class Logs:
         return f"{timestamp_part}{level_part} {category_part} {thread_part}{tracing_part}{metadata_part}{context_part}{extra_part}{message_part}"
     
     @classmethod
-    def _should_log_category(cls, category: str) -> bool:
+    def _should_log_category(cls, category: Category) -> bool:
         """Prüft ob Kategorie geloggt werden soll"""
-        if category in cls._excluded_categories:
+        category_str = category.value
+        if category_str in cls._excluded_categories:
             return False
-        if cls._category_filter and category not in cls._category_filter:
+        if cls._category_filter and category_str not in cls._category_filter:
             return False
         return True
     
     @classmethod
-    def _trigger_alerts(cls, level: LogLevel, category: str, message: str):
+    def _trigger_alerts(cls, level: LogLevel, category: Category, message: str):
         """Triggert Alert-Handler für kritische Logs"""
         if level in cls._alert_handlers:
-            alert_key = f"{level.name}:{category}"
+            alert_key = f"{level.name}:{category.value}"
             current_time = time.time()
             
             if alert_key in cls._alert_cooldown:
@@ -428,254 +394,311 @@ class Logs:
             
             for handler in cls._alert_handlers[level]:
                 try:
-                    handler(level, category, message)
+                    handler(level, category.value, message)
                 except Exception as e:
                     print(f"[Logs] Alert-Handler-Fehler: {e}", file=sys.stderr)
     
     @classmethod
-    def _rotate_log_file(cls):
-        """Rotiert Log-Datei wenn zu groß"""
-        if not cls.log_file or not cls.max_file_size:
-            return
+    def _log(cls, level: LogLevel, category: Category, message: str, extra: Optional[Dict] = None, frame_depth: int = 3):
+        """Die zentrale Log-Methode"""
         
-        try:
-            if cls.log_file.exists() and cls.log_file.stat().st_size > cls.max_file_size:
-                for i in range(cls.backup_count - 1, 0, -1):
-                    old_file = cls.log_file.with_suffix(f"{cls.log_file.suffix}.{i}")
-                    new_file = cls.log_file.with_suffix(f"{cls.log_file.suffix}.{i+1}")
-                    if old_file.exists():
-                        old_file.rename(new_file)
-                
-                cls.log_file.rename(cls.log_file.with_suffix(f"{cls.log_file.suffix}.1"))
-        except Exception as e:
-            print(f"[Logs] Rotation-Fehler: {e}", file=sys.stderr)
-    
-    @classmethod
-    def _write_to_file(cls, message: str, is_json: bool = False):
-        """Schreibt in Log-Datei mit Rotation"""
-        if not cls.log_file:
-            return
-        
-        cls._rotate_log_file()
-        
-        try:
-            clean_message = message
-            if not is_json:
-                # Entfernt Colorama-Codes für Datei-Logging
-                for code in list(Fore.__dict__.values()) + list(Style.__dict__.values()) + list(Back.__dict__.values()):
-                    if isinstance(code, str):
-                        clean_message = clean_message.replace(code, '')
-            
-            with open(cls.log_file, 'a', encoding='utf-8') as f:
-                f.write(clean_message + '\n')
-                if cls.auto_flush:
-                    f.flush()
-        except Exception as e:
-            print(f"[Logs] File-Write-Fehler: {e}", file=sys.stderr)
-    
-    @classmethod
-    def _flush_buffer(cls):
-        """Flusht den Log-Buffer"""
-        if not cls._buffer:
-            return
-        
-        with cls._lock:
-            while cls._buffer:
-                log_entry = cls._buffer.popleft()
-                cls._write_to_file(log_entry["output"], log_entry.get("is_json", False))
-                print(log_entry["output"])
-    
-    @classmethod
-    def _log(cls, level: LogLevel, category: str, message: str, extra: Optional[Dict] = None, frame_depth: int = 3):
-        """Interne Log-Methode"""
         if not cls.enabled or level < cls.min_level:
             return
         
         if not cls._should_log_category(category):
             return
-        
+            
         if not cls._should_sample():
             return
-        
-        if not cls._check_rate_limit(category):
+            
+        if not cls._check_rate_limit(category.value):
             return
-        
+            
         cls._auto_adjust_log_level()
         
         with cls._lock:
-            cls._log_count[level] += 1
-            cls._category_count[category] += 1
+            # 1. Metadaten sammeln
+            metadata = cls._get_metadata(frame_depth=frame_depth + 1) # +1 für diesen Aufruf
             
-            if level >= LogLevel.ERROR:
-                cls._error_count_by_category[category] += 1
-            
+            # 2. Nachricht bearbeiten
             message = cls._redact_sensitive_data(message)
-            metadata = cls._get_metadata(frame_depth)
             
+            # 3. Formatieren
             if cls.format_type == LogFormat.JSON:
-                output = cls._format_json(level, category, message, metadata, extra)
-                is_json = True
+                formatted_message = cls._format_json(level, category, message, metadata, extra)
             else:
-                output = cls._format_colored(level, category, message, metadata, extra)
-                is_json = False
+                formatted_message = cls._format_colored(level, category, message, metadata, extra)
             
+            # 4. Speichern und Ausgeben
+            cls._output(formatted_message, level)
+            
+            # 5. Zähler und Speicherung aktualisieren
+            cls._log_count[level] += 1
+            cls._category_count[category.value] += 1
+            if level >= LogLevel.ERROR:
+                cls._error_count_by_category[category.value] += 1
+            
+            # 6. Session Recording
             if cls._session_recording:
                 cls._session_logs.append({
                     "timestamp": datetime.now().isoformat(),
                     "level": level.name,
-                    "category": category,
+                    "category": category.value,
                     "message": message,
-                    "metadata": metadata,
-                    "extra": extra
+                    **metadata
                 })
             
+            # 7. Alerts und Weiterleitung
+            cls._trigger_alerts(level, category, message)
+            if cls._remote_enabled:
+                cls._send_to_remote(formatted_message)
+    
+    @classmethod
+    def _output(cls, message: str, level: LogLevel):
+        """Schreibt die Nachricht in die Konsole und in die Datei"""
+        
+        # Konsole
+        if cls.colorize:
+            print(message, file=sys.stderr if level >= LogLevel.WARN else sys.stdout)
+        else:
+            # Entferne alle ANSI-Codes für nicht-farbige Ausgabe
+            import re
+            message_stripped = re.sub(r'\x1b\[[0-9;]*m', '', message)
+            print(message_stripped, file=sys.stderr if level >= LogLevel.WARN else sys.stdout)
+        
+        # Datei-Log (gepuffert oder direkt)
+        if cls.log_file:
+            log_line = cls._format_json(level, Category(level.name) if level.name in Category.__members__ else Category.SYSTEM, message, cls._get_metadata(frame_depth=5)) # Frame depth angepasst
+            
             if cls._buffer_enabled:
-                cls._buffer.append({"output": output, "is_json": is_json})
+                cls._buffer.append(log_line)
                 if time.time() - cls._last_flush > cls._buffer_flush_interval:
                     cls._flush_buffer()
-                    cls._last_flush = time.time()
             else:
-                if level >= LogLevel.ERROR:
-                    print(output, file=sys.stderr)
-                else:
-                    print(output)
+                cls._write_to_file(f"{log_line}\n")
+    
+    @classmethod
+    def _write_to_file(cls, data: str):
+        """Führt die eigentliche Schreiboperation durch und prüft die Dateigröße"""
+        if not cls.log_file:
+            return
+
+        try:
+            # Log-Rotation prüfen
+            if cls.max_file_size and cls.log_file.exists() and cls.log_file.stat().st_size > cls.max_file_size:
+                cls._rotate_logs()
                 
-                cls._write_to_file(output, is_json)
-                cls._send_to_remote(output)
+            with open(cls.log_file, 'a', encoding='utf-8') as f:
+                f.write(data)
+                if cls.auto_flush:
+                    f.flush()
+        except Exception as e:
+            print(f"[Logs] Dateischreibfehler: {e}", file=sys.stderr)
+
+    @classmethod
+    def _rotate_logs(cls):
+        """Rotiert Log-Dateien, wenn die maximale Größe erreicht ist"""
+        if not cls.log_file:
+            return
+        
+        # Älteste Datei löschen
+        if cls.backup_count > 0:
+            oldest_file = cls.log_file.with_suffix(f"{cls.log_file.suffix}.{cls.backup_count}")
+            if oldest_file.exists():
+                oldest_file.unlink()
             
-            cls._trigger_alerts(level, category, message)
+            # Dateien verschieben (n -> n+1)
+            for i in range(cls.backup_count - 1, 0, -1):
+                src = cls.log_file.with_suffix(f"{cls.log_file.suffix}.{i}")
+                dst = cls.log_file.with_suffix(f"{cls.log_file.suffix}.{i+1}")
+                if src.exists():
+                    src.rename(dst)
             
-            for handler in cls._handlers:
-                try:
-                    handler(level, category, message, metadata)
-                except Exception as e:
-                    print(f"[Logs] Handler-Fehler: {e}", file=sys.stderr)
+            # Aktuelle Datei umbenennen zu .1
+            cls.log_file.rename(cls.log_file.with_suffix(f"{cls.log_file.suffix}.1"))
+            
+        cls.info(Category.SYSTEM, f"Logdatei rotiert: {cls.log_file.name}")
+        cls._compress_old_logs()
+
+    @classmethod
+    def _flush_buffer(cls):
+        """Schreibt den Puffer in die Logdatei"""
+        if not cls._buffer_enabled or not cls.log_file or not cls._buffer:
+            return
+        
+        with cls._lock:
+            buffer_copy = list(cls._buffer)
+            cls._buffer.clear()
+            cls._write_to_file("\n".join(buffer_copy) + "\n")
+            cls._last_flush = time.time()
     
-    # === Public Logging Methods (Alle Level enthalten) ===
-    
+    # === Public Logging Methoden ===
+
     @classmethod
     def trace(cls, category: Category, message: str, **kwargs):
-        """TRACE Level - Sehr detaillierte Debug-Infos"""
-        cls._log(LogLevel.TRACE, category.value, message, kwargs if kwargs else None)
-    
+        """Trace-Level Log (sehr detailliert)"""
+        cls._log(LogLevel.TRACE, category, message, extra=kwargs, frame_depth=3)
+        
     @classmethod
     def debug(cls, category: Category, message: str, **kwargs):
-        """DEBUG Level - Debug-Informationen"""
-        cls._log(LogLevel.DEBUG, category.value, message, kwargs if kwargs else None)
-    
+        """Debug-Level Log"""
+        cls._log(LogLevel.DEBUG, category, message, extra=kwargs, frame_depth=3)
+
     @classmethod
     def info(cls, category: Category, message: str, **kwargs):
-        """INFO Level - Allgemeine Informationen"""
-        cls._log(LogLevel.INFO, category.value, message, kwargs if kwargs else None)
-    
+        """Info-Level Log"""
+        cls._log(LogLevel.INFO, category, message, extra=kwargs, frame_depth=3)
+
     @classmethod
     def success(cls, category: Category, message: str, **kwargs):
-        """SUCCESS Level - Erfolgreiche Operationen"""
-        cls._log(LogLevel.SUCCESS, category.value, message, kwargs if kwargs else None)
-
+        """Success-Level Log"""
+        cls._log(LogLevel.SUCCESS, category, message, extra=kwargs, frame_depth=3)
+        
     @classmethod
     def loading(cls, category: Category, message: str, **kwargs):
-        """LOADING Level - Startet Lade-Vorgang"""
-        cls._log(LogLevel.LOADING, category.value, message, kwargs if kwargs else None)
-
+        """Loading-Level Log"""
+        cls._log(LogLevel.LOADING, category, message, extra=kwargs, frame_depth=3)
+        
     @classmethod
     def processing(cls, category: Category, message: str, **kwargs):
-        """PROCESSING Level - Verarbeitet gerade"""
-        cls._log(LogLevel.PROCESSING, category.value, message, kwargs if kwargs else None)
+        """Processing-Level Log"""
+        cls._log(LogLevel.PROCESSING, category, message, extra=kwargs, frame_depth=3)
 
     @classmethod
     def progress(cls, category: Category, message: str, **kwargs):
-        """PROGRESS Level - Fortschritts-Update (z.B. 45%)"""
-        cls._log(LogLevel.PROGRESS, category.value, message, kwargs if kwargs else None)
-    
+        """Progress-Level Log"""
+        cls._log(LogLevel.PROGRESS, category, message, extra=kwargs, frame_depth=3)
+        
     @classmethod
     def waiting(cls, category: Category, message: str, **kwargs):
-        """WAITING Level - Wartet auf Ressource/Response"""
-        cls._log(LogLevel.WAITING, category.value, message, kwargs if kwargs else None)
+        """Waiting-Level Log"""
+        cls._log(LogLevel.WAITING, category, message, extra=kwargs, frame_depth=3)
         
     @classmethod
     def notice(cls, category: Category, message: str, **kwargs):
-        """NOTICE Level - Wichtige Hinweise (zwischen INFO und WARN)"""
-        cls._log(LogLevel.NOTICE, category.value, message, kwargs if kwargs else None)
-    
+        """Notice-Level Log"""
+        cls._log(LogLevel.NOTICE, category, message, extra=kwargs, frame_depth=3)
+
     @classmethod
     def warn(cls, category: Category, message: str, **kwargs):
-        """WARN Level - Warnungen"""
-        cls._log(LogLevel.WARN, category.value, message, kwargs if kwargs else None)
-    
+        """Warn-Level Log"""
+        cls._log(LogLevel.WARN, category, message, extra=kwargs, frame_depth=3)
+
     @classmethod
-    def error(cls, category: Category, message: str, **kwargs):
-        """ERROR Level - Fehler"""
-        cls._log(LogLevel.ERROR, category.value, message, kwargs if kwargs else None)
-    
+    def error(cls, category: Category, message: str, exception: Optional[BaseException] = None, **kwargs):
+        """Error-Level Log mit optionaler Exception-Verarbeitung"""
+        if exception:
+            trace = traceback.format_exc()
+            message = f"{message} (Exception: {type(exception).__name__}: {exception})\n{trace}"
+        cls._log(LogLevel.ERROR, category, message, extra=kwargs, frame_depth=3)
+
     @classmethod
-    def critical(cls, category: Category, message: str, **kwargs):
-        """CRITICAL Level - Kritische Fehler (noch behebbar)"""
-        cls._log(LogLevel.CRITICAL, category.value, message, kwargs if kwargs else None)
-    
+    def critical(cls, category: Category, message: str, exception: Optional[BaseException] = None, **kwargs):
+        """Critical-Level Log"""
+        if exception:
+            trace = traceback.format_exc()
+            message = f"{message} (Exception: {type(exception).__name__}: {exception})\n{trace}"
+        cls._log(LogLevel.CRITICAL, category, message, extra=kwargs, frame_depth=3)
+        
     @classmethod
-    def fatal(cls, category: Category, message: str, **kwargs):
-        """FATAL Level - Fatale Fehler (Programm-Absturz)"""
-        cls._log(LogLevel.FATAL, category.value, message, kwargs if kwargs else None)
-    
+    def fatal(cls, category: Category, message: str, exception: Optional[BaseException] = None, **kwargs):
+        """Fatal-Level Log"""
+        if exception:
+            trace = traceback.format_exc()
+            message = f"{message} (Exception: {type(exception).__name__}: {exception})\n{trace}"
+        cls._log(LogLevel.FATAL, category, message, extra=kwargs, frame_depth=3)
+
     @classmethod
     def security(cls, category: Category, message: str, **kwargs):
-        """SECURITY Level - Sicherheitsrelevante Events"""
-        cls._log(LogLevel.SECURITY, category.value, message, kwargs if kwargs else None)
+        """Security-Level Log"""
+        cls._log(LogLevel.SECURITY, category, message, extra=kwargs, frame_depth=3)
+    
+    # === Kontext-Management ===
     
     @classmethod
-    def exception(cls, category: Category, message: str, exc: Optional[BaseException] = None):
-        """ERROR mit Traceback"""
-        full_message = f"{message}\n"
-        if exc is not None:
-            full_message += "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
-        else:
-            full_message += traceback.format_exc()
-        cls._log(LogLevel.ERROR, category.value, full_message.strip(), frame_depth=3)
+    def push_context(cls, context: str):
+        """Fügt einen Kontext-String zum Stack hinzu"""
+        cls._context_stack.append(context)
+        
+    @classmethod
+    def pop_context(cls):
+        """Entfernt den obersten Kontext-String vom Stack"""
+        if cls._context_stack:
+            return cls._context_stack.pop()
+        return None
     
-    # === Utility Methods ===
+    # === Konfigurationsmethoden ===
     
     @classmethod
-    def separator(cls, char: str = "=", length: int = 50):
-        """Druckt eine Trennlinie"""
-        print(f"{Style.DIM}{char * length}{Style.RESET_ALL}")
-    
-    @classmethod
-    def banner(cls, text: str, category: Category = Category.SYSTEM):
-        """Druckt einen auffälligen Banner"""
-        cls.separator("=", 60)
-        cls.info(category, f"  {text}")
-        cls.separator("=", 60)
-    
-    @classmethod
-    def configure(cls, **kwargs):
-        """Konfiguriert den Logger"""
+    def configure(cls, 
+                  min_level: LogLevel = LogLevel.DEBUG, 
+                  log_file: Optional[Union[str, Path]] = None,
+                  format_type: LogFormat = LogFormat.STANDARD,
+                  show_metadata: bool = False,
+                  show_thread_id: bool = False,
+                  enable_buffer: bool = False,
+                  enable_redaction: bool = False,
+                  enable_remote: bool = False,
+                  remote_host: Optional[str] = None,
+                  remote_port: int = 514,
+                  category_filter: Optional[List[Category]] = None,
+                  exclude_categories: Optional[List[Category]] = None,
+                  sampling_rate: float = 1.0
+                  ):
+        """Konfiguriert den Logger mit zentralen Einstellungen."""
+        
         with cls._lock:
-            for key, value in kwargs.items():
-                if hasattr(cls, key):
-                    setattr(cls, key, value)
-
-
-class LogContext:
-    """Context Manager für verschachtelte Logs"""
-    def __init__(self, name: str):
-        self.name = name
+            cls.min_level = min_level
+            cls.format_type = format_type
+            cls.show_metadata = show_metadata
+            cls.show_thread_id = show_thread_id
+            cls._buffer_enabled = enable_buffer
+            cls._redact_enabled = enable_redaction
+            cls._remote_enabled = enable_remote
+            cls._remote_host = remote_host
+            cls._remote_port = remote_port
+            cls._sampling_rate = max(0.0, min(1.0, sampling_rate))
+            
+            if log_file:
+                cls.log_file = Path(log_file) if isinstance(log_file, str) else log_file
+                if cls.log_file.parent:
+                    cls.log_file.parent.mkdir(parents=True, exist_ok=True)
+            else:
+                cls.log_file = None
+                
+            if category_filter:
+                cls._category_filter = [c.value for c in category_filter]
+            else:
+                cls._category_filter = None
+                
+            if exclude_categories:
+                cls._excluded_categories = [c.value for c in exclude_categories]
+            else:
+                cls._excluded_categories = []
     
-    def __enter__(self):
-        Logs._context_stack.append(self.name)
-        return self
-    
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if Logs._context_stack:
-            Logs._context_stack.pop()
+    @classmethod
+    def register_alert_handler(cls, level: LogLevel, handler: Callable):
+        """Registriert einen Handler, der bei einem bestimmten LogLevel ausgelöst wird."""
+        cls._alert_handlers[level].append(handler)
+        
+    @classmethod
+    def start_session_recording(cls):
+        """Startet die Aufzeichnung von Logs im Speicher."""
+        with cls._lock:
+            cls._session_recording = True
+            cls._session_logs = []
+            cls._session_start = datetime.now()
+            cls.info(Category.SYSTEM, "Session-Recording gestartet.")
+            
+    @classmethod
+    def stop_session_recording(cls) -> List[Dict[str, Any]]:
+        """Stoppt die Aufzeichnung und gibt die gesammelten Logs zurück."""
+        with cls._lock:
+            if cls._session_recording:
+                cls._session_recording = False
+                cls.info(Category.SYSTEM, f"Session-Recording beendet. {len(cls._session_logs)} Einträge gesammelt.")
+                return cls._session_logs
+            return []
 
-
-@atexit.register
-def _cleanup():
-    """Cleanup beim Beenden"""
-    if Logs._buffer_enabled:
-        Logs._flush_buffer()
-    # Log.stop_session wurde nicht bereitgestellt, aber der Aufruf wurde entfernt,
-    # um Fehler zu vermeiden, falls die Methode fehlt.
-    # if Logs._session_recording:
-    #     Logs.stop_session()
+# Registriere atexit-Funktion, um den Puffer beim Beenden zu leeren
+atexit.register(Logs._flush_buffer)
