@@ -22,7 +22,7 @@ from enum import IntEnum, Enum
 from colorama import Fore, Style, Back, init
 
 # WICHTIG: Kategorien aus der separaten Datei importieren
-from categories import Category, CategoryColors 
+from category import Category, CategoryColors 
 
 # Colorama initialisieren
 init(autoreset=True)
