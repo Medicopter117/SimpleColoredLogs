@@ -2,12 +2,20 @@
 Logs Package - Professional Terminal Logger
 PyNum Style Naming Convention
 
-Zentrale Imports für einfache Verwendung
+Zentrale Imports für einfache Verwendung.
+Diese Datei geht davon aus, dass logger.py, category.py und loglevel.py
+in einer einzigen logger.py zusammengeführt wurden.
 """
 
-from .logger import Logs
-from .category import Category, CategoryColors
-from .loglevel import LogLevel, LogFormat, LevelColors
+# Importiere alles aus der zusammengeführten logger.py
+from .logger import (
+    Logs,
+    Category,
+    CategoryColors,
+    LogLevel,
+    LogFormat,
+    LevelColors
+)
 
 __all__ = [
     # Main Logger
@@ -28,6 +36,25 @@ __all__ = [
     "C",
 ]
 
+class LogContext:
+    """
+    Context Manager für temporäre Log-Kontexte.
+    
+    Verwendung:
+        with LogContext("USER_UPDATE"):
+            Logs.info(Category.USER, "Updating user...")
+    """
+    def __init__(self, context: str):
+        self.context = context
+
+    def __enter__(self):
+        Logs.push_context(self.context)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        Logs.pop_context()
+
+
 # Quick-Start Konfiguration
 def quick_start(
     log_file: str = "app.log",
@@ -37,7 +64,7 @@ def quick_start(
     auto_flush: bool = True
 ) -> None:
     """
-    Quick-Start Konfiguration für schnellen Einstieg
+    Quick-Start Konfiguration für schnellen Einstieg.
     
     Args:
         log_file: Pfad zur Log-Datei
@@ -51,19 +78,22 @@ def quick_start(
         >>> quick_start()
         >>> Logs.info(Category.SYSTEM, "App started")
     """
+    # Basis-Konfiguration über configure
     Logs.configure(
         log_file=log_file,
         min_level=min_level,
-        show_metadata=show_metadata,
-        colorize=colorize,
-        auto_flush=auto_flush
+        show_metadata=show_metadata
     )
+    
+    # Zusätzliche Attribute direkt setzen (da configure diese ggf. nicht alle als Arg nimmt)
+    Logs.colorize = colorize
+    Logs.auto_flush = auto_flush
 
 
 # Convenience Imports für häufig genutzte Kategorien
 class C:
     """
-    Shorthand für häufig genutzte Kategorien
+    Shorthand für häufig genutzte Kategorien.
     
     Verwendung:
         >>> from logs import Logs, C
