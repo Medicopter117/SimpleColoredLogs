@@ -2,12 +2,9 @@
 logger.py
 
 Professional Terminal Logger mit erweiterten Features
-Ein vollständiger, produktionsreifer Logger, der log_categories.py importiert.
+Standalone-Version: Enthält LogLevels, Categories und die Logs-Klasse in einer Datei.
 """
 
-from datetime import datetime
-from typing import Optional, Callable, Dict, Any, List, Union, ClassVar
-from pathlib import Path
 import sys
 import threading
 import inspect
@@ -16,36 +13,49 @@ import json
 import os
 import time
 import atexit
+import re
+import socket
+import gzip
+import random
+from datetime import datetime
+from typing import Optional, Callable, Dict, Any, List, Union, ClassVar
+from pathlib import Path
 from collections import defaultdict, deque
 from enum import IntEnum, Enum
 
-from colorama import Fore, Style, Back, init
+# Externe Abhängigkeit
+try:
+    from colorama import Fore, Style, Back, init
+    # Colorama initialisieren
+    init(autoreset=True)
+except ImportError:
+    # Fallback, falls colorama nicht installiert ist
+    class MockColor:
+        def __getattr__(self, name): return ""
+    Fore = Style = Back = MockColor()
+    def init(**kwargs): pass
 
-# WICHTIG: Kategorien aus der separaten Datei importieren
-from .category import Category, CategoryColors 
 
-# Colorama initialisieren
-init(autoreset=True)
-
-
-## 🚀 LOG LEVEL DEFINITIONEN
+# ==========================================
+# TEIL 1: LOG LEVEL DEFINITIONEN (aus loglevel.py)
+# ==========================================
 
 class LogLevel(IntEnum):
     """Log-Level Definitionen"""
-    TRACE = -1      
-    DEBUG = 0       
-    INFO = 1        
-    SUCCESS = 2     
-    LOADING = 3     
-    PROCESSING = 4  
-    PROGRESS = 5    
-    WAITING = 6     
-    NOTICE = 7      
-    WARN = 8        
-    ERROR = 9       
-    CRITICAL = 10   
-    FATAL = 11      
-    SECURITY = 12   
+    TRACE = -1      # Sehr detaillierte Debug-Infos
+    DEBUG = 0       # Entwickler-Informationen
+    INFO = 1        # Allgemeine Informationen
+    SUCCESS = 2     # Erfolgreiche Operationen
+    LOADING = 3     # Startet Lade-Vorgang
+    PROCESSING = 4  # Verarbeitet gerade
+    PROGRESS = 5    # Fortschritts-Update (z.B. 45%)
+    WAITING = 6     # Wartet auf Ressource/Response
+    NOTICE = 7      # Wichtige Hinweise (zwischen INFO und WARN)
+    WARN = 8        # Warnungen
+    ERROR = 9       # Fehler
+    CRITICAL = 10   # Kritische Fehler (noch behebbar)
+    FATAL = 11      # Fatale Fehler (Programm-Absturz)
+    SECURITY = 12   # Sicherheitsrelevante Events
 
 
 class LogFormat(IntEnum):
@@ -82,7 +92,322 @@ class LevelColors:
         return cls.COLORS.get(level, Fore.WHITE)
 
 
-## 💻 LOGS HAUPTKLASSE
+# ==========================================
+# TEIL 2: KATEGORIEN (aus category.py)
+# ==========================================
+
+class Category(str, Enum):
+    """Standard-Kategorien für Logs mit PyNum Naming"""
+    
+    # === Core System ===
+    API = "API"
+    DATABASE = "DATABASE"
+    SERVER = "SERVER"
+    CACHE = "CACHE"
+    AUTH = "AUTH"
+    SYSTEM = "SYSTEM"
+    CONFIG = "CONFIG"
+    
+    # === Network & Communication ===
+    NETWORK = "NETWORK"
+    HTTP = "HTTP"
+    WEBSOCKET = "WEBSOCKET"
+    GRPC = "GRPC"
+    GRAPHQL = "GRAPHQL"
+    REST = "REST"
+    SOAP = "SOAP"
+    
+    # === Security & Compliance ===
+    SECURITY = "SECURITY"
+    ENCRYPTION = "ENCRYPTION"
+    FIREWALL = "FIREWALL"
+    AUDIT = "AUDIT"
+    COMPLIANCE = "COMPLIANCE"
+    VULNERABILITY = "VULNERABILITY"
+    
+    # === Storage & Files ===
+    FILE = "FILE"
+    STORAGE = "STORAGE"
+    BACKUP = "BACKUP"
+    SYNC = "SYNC"
+    UPLOAD = "UPLOAD"
+    DOWNLOAD = "DOWNLOAD"
+    
+    # === Messaging & Events ===
+    QUEUE = "QUEUE"
+    EVENT = "EVENT"
+    PUBSUB = "PUBSUB"
+    KAFKA = "KAFKA"
+    RABBITMQ = "RABBITMQ"
+    REDIS = "REDIS"
+    
+    # === External Services ===
+    EMAIL = "EMAIL"
+    SMS = "SMS"
+    NOTIFICATION = "NOTIFICATION"
+    PAYMENT = "PAYMENT"
+    BILLING = "BILLING"
+    STRIPE = "STRIPE"
+    PAYPAL = "PAYPAL"
+    
+    # === Monitoring & Observability ===
+    METRICS = "METRICS"
+    PERFORMANCE = "PERFORMANCE"
+    HEALTH = "HEALTH"
+    MONITORING = "MONITORING"
+    TRACING = "TRACING"
+    PROFILING = "PROFILING"
+    
+    # === Data Processing ===
+    ETL = "ETL"
+    PIPELINE = "PIPELINE"
+    WORKER = "WORKER"
+    CRON = "CRON"
+    SCHEDULER = "SCHEDULER"
+    BATCH = "BATCH"
+    STREAM = "STREAM"
+    
+    # === Business Logic ===
+    BUSINESS = "BUSINESS"
+    WORKFLOW = "WORKFLOW"
+    TRANSACTION = "TRANSACTION"
+    ORDER = "ORDER"
+    INVOICE = "INVOICE"
+    SHIPPING = "SHIPPING"
+    
+    # === User Management ===
+    USER = "USER"
+    SESSION = "SESSION"
+    REGISTRATION = "REGISTRATION"
+    LOGIN = "LOGIN"
+    LOGOUT = "LOGOUT"
+    PROFILE = "PROFILE"
+    
+    # === AI & ML ===
+    AI = "AI"
+    ML = "ML"
+    TRAINING = "TRAINING"
+    INFERENCE = "INFERENCE"
+    MODEL = "MODEL"
+    
+    # === DevOps & Infrastructure ===
+    DEPLOY = "DEPLOY"
+    CI_CD = "CI/CD"
+    DOCKER = "DOCKER"
+    KUBERNETES = "K8S"
+    TERRAFORM = "TERRAFORM"
+    ANSIBLE = "ANSIBLE"
+    
+    # === Testing & Quality ===
+    TEST = "TEST"
+    UNITTEST = "UNITTEST"
+    INTEGRATION = "INTEGRATION"
+    E2E = "E2E"
+    LOAD_TEST = "LOAD_TEST"
+    
+    # === Third Party Integrations ===
+    SLACK = "SLACK"
+    DISCORD = "DISCORD"
+    TWILIO = "TWILIO"
+    AWS = "AWS"
+    GCP = "GCP"
+    AZURE = "AZURE"
+    
+    # === Discord Bot Specific ===
+    BOT = "BOT"
+    COGS = "COGS"
+    COMMANDS = "COMMANDS"
+    EVENTS = "EVENTS"
+    VOICE = "VOICE"
+    GUILD = "GUILD"
+    MEMBER = "MEMBER"
+    CHANNEL = "CHANNEL"
+    MESSAGE = "MESSAGE"
+    REACTION = "REACTION"
+    MODERATION = "MODERATION"
+    PERMISSIONS = "PERMISSIONS"
+    EMBED = "EMBED"
+    SLASH_CMD = "SLASH_CMD"
+    BUTTON = "BUTTON"
+    MODAL = "MODAL"
+    SELECT_MENU = "SELECT_MENU"
+    AUTOMOD = "AUTOMOD"
+    WEBHOOK = "WEBHOOK"
+    PRESENCE = "PRESENCE"
+    INTENTS = "INTENTS"
+    SHARDING = "SHARDING"
+    GATEWAY = "GATEWAY"
+    RATELIMIT = "RATELIMIT"
+    
+    # === Development ===
+    DEBUG = "DEBUG"
+    DEV = "DEV"
+    STARTUP = "STARTUP"
+    SHUTDOWN = "SHUTDOWN"
+    MIGRATION = "MIGRATION"
+
+
+class CategoryColors:
+    """Farb-Mappings für Kategorien"""
+    
+    COLORS: ClassVar[dict] = {
+        # Core System
+        Category.API: Fore.BLUE,
+        Category.DATABASE: Fore.MAGENTA,
+        Category.SERVER: Fore.CYAN,
+        Category.CACHE: Fore.YELLOW,
+        Category.AUTH: Fore.RED,
+        Category.SYSTEM: Fore.WHITE,
+        Category.CONFIG: Fore.LIGHTMAGENTA_EX,
+        
+        # Network & Communication
+        Category.NETWORK: Fore.LIGHTBLUE_EX,
+        Category.HTTP: Fore.BLUE + Style.BRIGHT,
+        Category.WEBSOCKET: Fore.LIGHTBLUE_EX + Style.BRIGHT,
+        Category.GRPC: Fore.CYAN + Style.BRIGHT,
+        Category.GRAPHQL: Fore.MAGENTA + Style.BRIGHT,
+        Category.REST: Fore.BLUE,
+        Category.SOAP: Fore.LIGHTBLUE_EX,
+        
+        # Security & Compliance
+        Category.SECURITY: Fore.LIGHTRED_EX,
+        Category.ENCRYPTION: Fore.RED + Style.BRIGHT,
+        Category.FIREWALL: Fore.RED,
+        Category.AUDIT: Fore.LIGHTRED_EX,
+        Category.COMPLIANCE: Fore.MAGENTA,
+        Category.VULNERABILITY: Fore.RED + Back.WHITE,
+        
+        # Storage & Files
+        Category.FILE: Fore.LIGHTGREEN_EX,
+        Category.STORAGE: Fore.LIGHTGREEN_EX,
+        Category.BACKUP: Fore.GREEN,
+        Category.SYNC: Fore.CYAN,
+        Category.UPLOAD: Fore.GREEN + Style.BRIGHT,
+        Category.DOWNLOAD: Fore.LIGHTGREEN_EX,
+        
+        # Messaging & Events
+        Category.QUEUE: Fore.LIGHTCYAN_EX,
+        Category.EVENT: Fore.LIGHTYELLOW_EX,
+        Category.PUBSUB: Fore.LIGHTMAGENTA_EX,
+        Category.KAFKA: Fore.WHITE + Style.BRIGHT,
+        Category.RABBITMQ: Fore.LIGHTYELLOW_EX,
+        Category.REDIS: Fore.RED,
+        
+        # External Services
+        Category.EMAIL: Fore.LIGHTMAGENTA_EX,
+        Category.SMS: Fore.LIGHTCYAN_EX,
+        Category.NOTIFICATION: Fore.YELLOW,
+        Category.PAYMENT: Fore.GREEN + Style.BRIGHT,
+        Category.BILLING: Fore.LIGHTGREEN_EX,
+        Category.STRIPE: Fore.LIGHTBLUE_EX,
+        Category.PAYPAL: Fore.BLUE,
+        
+        # Monitoring & Observability
+        Category.METRICS: Fore.LIGHTYELLOW_EX,
+        Category.PERFORMANCE: Fore.LIGHTYELLOW_EX,
+        Category.HEALTH: Fore.GREEN,
+        Category.MONITORING: Fore.CYAN,
+        Category.TRACING: Fore.LIGHTCYAN_EX,
+        Category.PROFILING: Fore.YELLOW,
+        
+        # Data Processing
+        Category.ETL: Fore.MAGENTA,
+        Category.PIPELINE: Fore.CYAN,
+        Category.WORKER: Fore.LIGHTBLUE_EX,
+        Category.CRON: Fore.YELLOW,
+        Category.SCHEDULER: Fore.LIGHTYELLOW_EX,
+        Category.BATCH: Fore.LIGHTMAGENTA_EX,
+        Category.STREAM: Fore.LIGHTCYAN_EX,
+        
+        # Business Logic
+        Category.BUSINESS: Fore.WHITE + Style.BRIGHT,
+        Category.WORKFLOW: Fore.CYAN,
+        Category.TRANSACTION: Fore.GREEN,
+        Category.ORDER: Fore.LIGHTGREEN_EX,
+        Category.INVOICE: Fore.LIGHTYELLOW_EX,
+        Category.SHIPPING: Fore.LIGHTBLUE_EX,
+        
+        # User Management
+        Category.USER: Fore.LIGHTMAGENTA_EX,
+        Category.SESSION: Fore.CYAN,
+        Category.REGISTRATION: Fore.GREEN,
+        Category.LOGIN: Fore.BLUE,
+        Category.LOGOUT: Fore.LIGHTBLUE_EX,
+        Category.PROFILE: Fore.MAGENTA,
+        
+        # AI & ML
+        Category.AI: Fore.MAGENTA + Style.BRIGHT,
+        Category.ML: Fore.LIGHTMAGENTA_EX,
+        Category.TRAINING: Fore.YELLOW,
+        Category.INFERENCE: Fore.LIGHTYELLOW_EX,
+        Category.MODEL: Fore.CYAN,
+        
+        # DevOps & Infrastructure
+        Category.DEPLOY: Fore.GREEN + Style.BRIGHT,
+        Category.CI_CD: Fore.LIGHTGREEN_EX,
+        Category.DOCKER: Fore.BLUE,
+        Category.KUBERNETES: Fore.LIGHTBLUE_EX,
+        Category.TERRAFORM: Fore.MAGENTA,
+        Category.ANSIBLE: Fore.RED,
+        
+        # Testing & Quality
+        Category.TEST: Fore.YELLOW,
+        Category.UNITTEST: Fore.LIGHTYELLOW_EX,
+        Category.INTEGRATION: Fore.CYAN,
+        Category.E2E: Fore.LIGHTCYAN_EX,
+        Category.LOAD_TEST: Fore.LIGHTMAGENTA_EX,
+        
+        # Third Party Integrations
+        Category.SLACK: Fore.MAGENTA,
+        Category.DISCORD: Fore.LIGHTBLUE_EX,
+        Category.TWILIO: Fore.RED,
+        Category.AWS: Fore.YELLOW,
+        Category.GCP: Fore.LIGHTBLUE_EX,
+        Category.AZURE: Fore.CYAN,
+        
+        # Discord Bot Specific
+        Category.BOT: Fore.LIGHTBLUE_EX + Style.BRIGHT,
+        Category.COGS: Fore.MAGENTA + Style.BRIGHT,
+        Category.COMMANDS: Fore.CYAN + Style.BRIGHT,
+        Category.EVENTS: Fore.LIGHTYELLOW_EX + Style.BRIGHT,
+        Category.VOICE: Fore.LIGHTGREEN_EX,
+        Category.GUILD: Fore.LIGHTMAGENTA_EX,
+        Category.MEMBER: Fore.LIGHTCYAN_EX,
+        Category.CHANNEL: Fore.BLUE,
+        Category.MESSAGE: Fore.WHITE,
+        Category.REACTION: Fore.YELLOW,
+        Category.MODERATION: Fore.RED + Style.BRIGHT,
+        Category.PERMISSIONS: Fore.LIGHTRED_EX,
+        Category.EMBED: Fore.LIGHTBLUE_EX,
+        Category.SLASH_CMD: Fore.CYAN + Style.BRIGHT,
+        Category.BUTTON: Fore.GREEN,
+        Category.MODAL: Fore.LIGHTMAGENTA_EX,
+        Category.SELECT_MENU: Fore.LIGHTYELLOW_EX,
+        Category.AUTOMOD: Fore.RED + Back.WHITE,
+        Category.WEBHOOK: Fore.LIGHTCYAN_EX,
+        Category.PRESENCE: Fore.LIGHTYELLOW_EX,
+        Category.INTENTS: Fore.MAGENTA,
+        Category.SHARDING: Fore.LIGHTBLUE_EX + Style.BRIGHT,
+        Category.GATEWAY: Fore.CYAN,
+        Category.RATELIMIT: Fore.YELLOW + Style.BRIGHT,
+        
+        # Development
+        Category.DEBUG: Fore.LIGHTBLACK_EX,
+        Category.DEV: Fore.CYAN,
+        Category.STARTUP: Fore.GREEN,
+        Category.SHUTDOWN: Fore.RED,
+        Category.MIGRATION: Fore.LIGHTYELLOW_EX,
+    }
+    
+    @classmethod
+    def get_color(cls, category: Category) -> str:
+        """Gibt die Farbe für eine Kategorie zurück"""
+        return cls.COLORS.get(category, Style.BRIGHT)
+
+
+# ==========================================
+# TEIL 3: HAUPT-LOGGING KLASSE
+# ==========================================
 
 class Logs:
     """
@@ -179,7 +504,6 @@ class Logs:
         if not cls._redact_enabled:
             return message
         
-        import re
         redacted = message
         for pattern in cls._redact_patterns:
             redacted = re.sub(pattern, '[REDACTED]', redacted, flags=re.IGNORECASE)
@@ -190,7 +514,6 @@ class Logs:
         """Prüft ob Log gesampelt werden soll"""
         if cls._sampling_rate >= 1.0:
             return True
-        import random
         return random.random() < cls._sampling_rate
     
     @classmethod
@@ -245,7 +568,6 @@ class Logs:
         if not cls._remote_enabled or not cls._remote_host:
             return
         
-        import socket
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             sock.settimeout(1)
@@ -260,7 +582,6 @@ class Logs:
         if not cls._compression_enabled or not cls.log_file:
             return
         
-        import gzip
         try:
             for i in range(1, cls.backup_count + 1):
                 old_file = cls.log_file.with_suffix(f"{cls.log_file.suffix}.{i}")
@@ -320,7 +641,7 @@ class Logs:
         level_name = level.name
         level_color = LevelColors.get_color(level)
         
-        # Kategorie Farbe aus importierter Klasse
+        # Kategorie Farbe aus Klasse
         category_color = CategoryColors.get_color(category) 
         
         # Timestamp
@@ -462,7 +783,6 @@ class Logs:
             print(message, file=sys.stderr if level >= LogLevel.WARN else sys.stdout)
         else:
             # Entferne alle ANSI-Codes für nicht-farbige Ausgabe
-            import re
             message_stripped = re.sub(r'\x1b\[[0-9;]*m', '', message)
             print(message_stripped, file=sys.stderr if level >= LogLevel.WARN else sys.stdout)
         
