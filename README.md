@@ -1,28 +1,32 @@
-![Mein Logo](img/SimpleColoredLogs.png)
+![SimpleColoredLogs](img/SimpleColoredLogs.png)
 # Professional Terminal Logger
 
 Ein vollständiger, produktionsreifer Logger mit erweiterten Features für Python-Anwendungen und Discord Bots.
 
-[![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[](https://www.python.org/downloads/)
+[](https://opensource.org/licenses/MIT)
 
 ## 🚀 Features
 
-- 🎨 **Farbige Terminal-Ausgabe** mit 100+ vordefinierten Kategorien
-- 📁 **File-Logging** mit automatischer Rotation und Kompression
-- 🎯 **13 Log-Levels** von TRACE bis SECURITY mit Status-Tracking
-- 🧵 **Thread-safe** mit Lock-Mechanismus
-- 📊 **Multiple Output-Formate** (Simple, Standard, Detailed, JSON)
-- 🔒 **Sensitive Data Redaction** (Passwörter, API-Keys, Tokens)
-- 🌐 **Correlation IDs** für Request-Tracing über Microservices
-- 🏥 **Health Checks** & **Prometheus Metrics Export**
-- 🤖 **24 Discord-spezifische Kategorien** für Bot-Entwicklung
+  - 🎨 **Farbige Terminal-Ausgabe** mit **148** vordefinierten Kategorien
+  - 📁 **File-Logging** mit automatischer Rotation und Kompression
+  - 🎯 **13 Log-Levels** von TRACE bis SECURITY mit Status-Tracking
+  - 🧵 **Thread-safe** mit Lock-Mechanismus
+  - 📊 **Multiple Output-Formate** (Simple, Standard, Detailed, JSON)
+  - 🔒 **Sensitive Data Redaction** (Passwörter, API-Keys, Tokens)
+  - 🌐 **Correlation IDs** für Request-Tracing über Microservices
+  - 🏥 **Health Checks** & **Prometheus Metrics Export**
+  - 🤖 **24 Discord-spezifische Kategorien** für Bot-Entwicklung
+
+-----
 
 ## 📦 Installation
 
 ```bash
 pip install SimpleColoredLogs
 ```
+
+-----
 
 ## 🎯 Quick Start
 
@@ -58,7 +62,8 @@ Logs.security(Category.AUTH, "Unauthorized access attempt", ip="1.2.3.4")
 try:
     raise ValueError("Something went wrong!")
 except Exception as e:
-    Logs.exception(Category.SYSTEM, "Critical error", e)
+    # Die Logs.exception Methode ist ein Alias für Logs.error mit traceback
+    Logs.error(Category.SYSTEM, "Critical error", exception=e) 
 ```
 
 ### Discord Bot Usage
@@ -103,7 +108,7 @@ Logs.info(Category.SHARDING, "Shard ready", shard_id=0, guilds=150, latency="42m
 # Performance Tracking
 Logs.performance("database_query", Category.DATABASE)
 # ... do work ...
-duration = Logs.performance("database_query", Category.DATABASE)
+duration = Logs.performance("database_query", Category.DATABASE) # Gibt Dauer zurück
 
 # Context Manager
 with Logs.context("UserRegistration"):
@@ -119,7 +124,7 @@ Logs.log_event("purchase_completed", Category.BUSINESS,
 Logs.set_correlation_id("req-abc-123-xyz")
 Logs.info(Category.API, "Processing request", endpoint="/api/users")
 
-# Tabellen
+# Tabellen (Achtung: Dies ist eine hypothetische Methode, falls du sie implementiert hast)
 Logs.table(Category.METRICS,
            ["Service", "Status", "Response Time"],
            [["API", "UP", "45ms"],
@@ -127,85 +132,101 @@ Logs.table(Category.METRICS,
             ["Cache", "DOWN", "N/A"]])
 ```
 
+-----
+
 ## 📊 Log Levels
 
-### Debug & Entwicklung
-- **TRACE** (-1): Sehr detaillierte Debug-Infos
-- **DEBUG** (0): Standard Debug-Informationen
+| Level | Wert | Beschreibung |
+| :--- | :--- | :--- |
+| **TRACE** | -1 | Sehr detaillierte Debug-Infos |
+| **DEBUG** | 0 | Standard Debug-Informationen |
+| **INFO** | 1 | Allgemeine Informationen |
+| **SUCCESS** | 2 | Erfolgreiche Operationen |
+| **LOADING** | 3 | Lädt gerade etwas |
+| **PROCESSING** | 4 | Verarbeitet Daten |
+| **PROGRESS** | 5 | Fortschritts-Updates |
+| **WAITING** | 6 | Wartet auf Ressourcen |
+| **NOTICE** | 7 | Wichtige Hinweise |
+| **WARN** | 8 | Warnungen |
+| **ERROR** | 9 | Standard-Fehler |
+| **CRITICAL** | 10 | Kritische Fehler |
+| **FATAL** | 11 | Fatale Fehler (Absturz) |
+| **SECURITY** | 12 | Sicherheitsvorfälle |
 
-### Information
-- **INFO** (1): Allgemeine Informationen
-- **SUCCESS** (2): Erfolgreiche Operationen
+-----
 
-### Status & Fortschritt
-- **LOADING** (3): Lädt gerade etwas
-- **PROCESSING** (4): Verarbeitet Daten
-- **PROGRESS** (5): Fortschritts-Updates
-- **WAITING** (6): Wartet auf Ressourcen
+## 🎨 Verfügbare Kategorien (148)
 
-### Warnungen
-- **NOTICE** (7): Wichtige Hinweise
-- **WARN** (8): Warnungen
+### Core System & Runtime
 
-### Fehler
-- **ERROR** (9): Standard-Fehler
-- **CRITICAL** (10): Kritische Fehler
-- **FATAL** (11): Fatale Fehler (Absturz)
-- **SECURITY** (12): Sicherheitsvorfälle
-
-## 🎨 Verfügbare Kategorien
-
-### Core System
 `API`, `DATABASE`, `SERVER`, `CACHE`, `AUTH`, `SYSTEM`, `CONFIG`, `SCHEMA`, `INDEX`, `QUERY`, `VIEW`, `TRANSACTION_COMMIT`, `NOSQL`,
-`RELATIONAL_DB`, `SESSION_STORAGE`
+`RELATIONAL_DB`, `SESSION_STORAGE`, **`RUNTIME`**, **`COMPILER`**, **`DEPENDENCY`**, **`CLI`**
 
 ### Network & Communication
-`NETWORK`, `HTTP`, `WEBSOCKET`, `GRPC`, `GRAPHQL`, `REST`, `SOAP`, `LOAD_BALANCER`, `REVERSE_PROXY`, `DNS`, `CDN`
 
-### Security & Compliance
-`SECURITY`, `ENCRYPTION`, `FIREWALL`, `AUDIT`, `COMPLIANCE`, `VULNERABILITY`, `GDPR`, `HIPAA`, `PCI_DSS`, `IDP`, `MFA`, `RATE_LIMITER`
+`NETWORK`, `HTTP`, `WEBSOCKET`, `GRPC`, `GRAPHQL`, `REST`, `SOAP`, `LOAD_BALANCER`, `REVERSE_PROXY`, `DNS`, `CDN`, **`GEOLOCATION`**
 
-### Frontend & User Interface
-`CLIENT`, `UI`, `UX`, `SPA`, `SSR`, `STATE`, `COMPONENT`
+### Security, Compliance & Fraud
 
-### Storage & Files
-`FILE`, `STORAGE`, `BACKUP`, `SYNC`, `UPLOAD`, `DOWNLOAD`
+`SECURITY`, `ENCRYPTION`, `FIREWALL`, `AUDIT`, `COMPLIANCE`, `VULNERABILITY`, `GDPR`, `HIPAA`, `PCI_DSS`, `IDP`, `MFA`, `RATE_LIMITER`, **`FRAUD`**
+
+### Frontend, UI & Internationalisierung
+
+`CLIENT`, `UI`, `UX`, `SPA`, `SSR`, `STATE`, `COMPONENT`, **`I18N`**
+
+### Storage, Files & Assets
+
+`FILE`, `STORAGE`, `BACKUP`, `SYNC`, `UPLOAD`, `DOWNLOAD`, **`ASSET`**
 
 ### Messaging & Events
+
 `QUEUE`, `EVENT`, `PUBSUB`, `KAFKA`, `RABBITMQ`, `REDIS`
 
 ### External Services
+
 `EMAIL`, `SMS`, `NOTIFICATION`, `PAYMENT`, `BILLING`, `STRIPE`, `PAYPAL`
 
 ### Monitoring & Observability
+
 `METRICS`, `PERFORMANCE`, `HEALTH`, `MONITORING`, `TRACING`, `PROFILING`
 
-### Data Processing
-`ETL`, `PIPELINE`, `WORKER`, `CRON`, `SCHEDULER`, `BATCH`, `STREAM`
+### Data Processing & Transformation
 
-### Business Logic
-`BUSINESS`, `WORKFLOW`, `TRANSACTION`, `ORDER`, `INVOICE`, `SHIPPING`
+`ETL`, `PIPELINE`, `WORKER`, `CRON`, `SCHEDULER`, `BATCH`, `STREAM`, **`MAPPING`**, **`TRANSFORM`**, **`REPORTING`**
+
+### Business Logic, Finance & Inventory
+
+`BUSINESS`, `WORKFLOW`, `TRANSACTION`, `ORDER`, `INVOICE`, `SHIPPING`, **`ACCOUNTING`**, **`INVENTORY`**
 
 ### User Management
+
 `USER`, `SESSION`, `REGISTRATION`, `LOGIN`, `LOGOUT`, `PROFILE`
 
 ### AI & ML
+
 `AI`, `ML`, `TRAINING`, `INFERENCE`, `MODEL`
 
 ### DevOps & Infrastructure
-`DEPLOY`, `CI_CD`, `DOCKER`, `KUBERNETES`, `TERRAFORM`, `ANSIBLE`, `SERVERLESS`, `CONTAINER`, `IAC`, `VPC` `AUTOSCALING` 
+
+`DEPLOY`, `CI_CD`, `DOCKER`, `KUBERNETES`, `TERRAFORM`, `ANSIBLE`, `SERVERLESS`, `CONTAINER`, `IAC`, `VPC`, `AUTOSCALING`, **`PROVISION`**, **`DEPROVISION`**
 
 ### Testing & Quality
+
 `TEST`, `UNITTEST`, `INTEGRATION`, `E2E`, `LOAD_TEST`
 
 ### Third Party Integrations
+
 `SLACK`, `DISCORD`, `TWILIO`, `AWS`, `GCP`, `AZURE`
 
 ### Discord Bot Specific
+
 `BOT`, `COGS`, `COMMANDS`, `EVENTS`, `VOICE`, `GUILD`, `MEMBER`, `CHANNEL`, `MESSAGE`, `REACTION`, `MODERATION`, `PERMISSIONS`, `EMBED`, `SLASH_CMD`, `BUTTON`, `MODAL`, `SELECT_MENU`, `AUTOMOD`, `WEBHOOK`, `PRESENCE`, `INTENTS`, `SHARDING`, `GATEWAY`, `RATELIMIT`
 
 ### Development
+
 `DEBUG`, `DEV`, `STARTUP`, `SHUTDOWN`, `MIGRATION`, `UPDATE`, `VERSION`
+
+-----
 
 ## 🔒 Security Features
 
@@ -233,6 +254,8 @@ Logs.enable_remote_forwarding("logserver.company.com", 514)
 Logs.disable_remote_forwarding()
 ```
 
+-----
+
 ## 📊 Monitoring & Health
 
 ### Health Checks
@@ -245,7 +268,7 @@ health = Logs.health_check()
 #     "total_logs": 1523,
 #     "error_count": 12,
 #     "error_rate": 0.008,
-#     ...
+#     # ... weitere Metriken
 # }
 
 # Schöne Ausgabe
@@ -263,13 +286,17 @@ Logs.print_stats()
 ### Prometheus Metrics
 
 ```python
-# Metrics exportieren
+# Metrics exportieren (im Prometheus-Textformat)
 metrics = Logs.export_metrics_prometheus()
 ```
+
+-----
 
 ## ⚙️ Konfiguration
 
 ```python
+from logs import LogFormat, LogLevel
+
 Logs.configure(
     enabled=True,
     show_timestamp=True,
@@ -304,10 +331,12 @@ Logs.set_sampling_rate(0.1)
 ### Adaptive Logging
 
 ```python
-# Auto-Anpassung bei hoher Last
+# Auto-Anpassung bei hoher Last (wechselt zu WARN bei >100 Logs/Minute)
 Logs.enable_adaptive_logging(noise_threshold=100)
 Logs.disable_adaptive_logging()
 ```
+
+-----
 
 ## 🔍 Debug Tools
 
@@ -317,7 +346,7 @@ Logs.disable_adaptive_logging()
 # Letzte 20 Logs anzeigen
 last_logs = Logs.tail(20)
 
-# Logs durchsuchen
+# Logs durchsuchen (Regex-Support)
 errors = Logs.grep("error", case_sensitive=False, max_results=100)
 api_errors = Logs.grep(r"API.*ERROR")
 ```
@@ -342,31 +371,39 @@ Logs.add_alert(LogLevel.FATAL, email_alert)
 Logs.set_alert_cooldown(300)  # 5 Minuten
 ```
 
+-----
+
 ## 📝 Log-Formate
 
 ### SIMPLE
+
 ```
 [INFO] [API] Request received
 ```
 
 ### STANDARD (Default)
+
 ```
 [2024-01-15 14:30:45] [INFO] [API] Request received
 ```
 
 ### DETAILED
+
 ```
 [2024-01-15 14:30:45] [INFO] [API] [main.py:123] Request received
 ```
 
 ### JSON
+
 ```json
 {"timestamp": "2024-01-15T14:30:45", "level": "INFO", "category": "API", "message": "Request received"}
 ```
 
+-----
+
 ## 🎯 Best Practices
 
-### 1. Strukturierte Logs mit Key-Value Pairs
+### 1\. Strukturierte Logs mit Key-Value Pairs
 
 ```python
 Logs.info(Category.API, "Request processed",
@@ -376,7 +413,7 @@ Logs.info(Category.API, "Request processed",
           duration_ms=45.2)
 ```
 
-### 2. Context für zusammenhängende Operationen
+### 2\. Context für zusammenhängende Operationen
 
 ```python
 with Logs.context("OrderProcessing"):
@@ -385,15 +422,18 @@ with Logs.context("OrderProcessing"):
     Logs.success(Category.SHIPPING, "Shipment created")
 ```
 
-### 3. Performance Tracking
+### 3\. Performance Tracking
 
 ```python
+# Verwenden Sie Logs.performance() für manuelle Messungen
+# oder implementieren Sie einen Dekorator:
 @Logs.measure(Category.DATABASE)
 def expensive_database_query():
+    # ... Datenbank-Code
     pass
 ```
 
-### 4. Correlation IDs für Microservices
+### 4\. Correlation IDs für Microservices
 
 ```python
 # Am Anfang jedes Requests
@@ -401,14 +441,16 @@ Logs.set_correlation_id(request.headers.get('X-Correlation-ID'))
 Logs.info(Category.API, "Processing request")
 ```
 
+-----
+
 ## 📄 License
 
-MIT License 
+MIT License
 
 ## 🤝 Contributing
 
-Contributions are welcome! Feel free to open issues or submit pull requests.
+Contributions are welcome\! Feel free to open issues or submit pull requests.
 
----
+-----
 
 Made with ❤️ for Python developers and Discord bot creators
