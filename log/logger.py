@@ -98,6 +98,7 @@ class LevelColors:
 # TEIL 2: KATEGORIEN (aus category.py)
 # ==========================================
 
+# NOTE: Diese Enum bleibt die interne Quelle der String-Werte und Farben.
 class Category(str, Enum):
     """Standard-Kategorien für Logs mit PyNum Naming"""
     
@@ -541,6 +542,219 @@ class CategoryColors:
         """Gibt die Farbe für eine Kategorie zurück"""
         return cls.COLORS.get(category, Style.BRIGHT)
 
+# ==========================================
+# HIERARCHISCHE ZUGRIFFS-KLASSE (für Autocompletion)
+# ==========================================
+
+class C:
+    """
+    Shorthand für hierarchischen Kategorie-Zugriff (z.B. C.CORE.API).
+    Jeder Leaf-Knoten verweist auf das entsprechende Category-Enum-Mitglied.
+    """
+    
+    # === Core System & Runtime ===
+    class CORE:
+        API = Category.API
+        DB = Category.DATABASE
+        SERVER = Category.SERVER
+        CACHE = Category.CACHE
+        AUTH = Category.AUTH
+        SYS = Category.SYSTEM
+        CFG = Category.CONFIG
+        SCHEMA = Category.SCHEMA
+        IDX = Category.INDEX
+        QUERY = Category.QUERY
+        VIEW = Category.VIEW
+        RUNTIME = Category.RUNTIME
+        COMPILER = Category.COMPILER
+        DEP = Category.DEPENDENCY
+        CLI = Category.CLI
+        
+    # === Network & Communication ===
+    class NET:
+        BASE = Category.NETWORK
+        HTTP = Category.HTTP
+        WS = Category.WEBSOCKET # WEBSOCKET
+        GRPC = Category.GRPC
+        GQL = Category.GRAPHQL
+        REST = Category.REST
+        SOAP = Category.SOAP
+        LB = Category.LOAD_BALANCER # LOAD_BALANCER
+        PROXY = Category.REVERSE_PROXY
+        DNS = Category.DNS
+        CDN = Category.CDN
+        GEO = Category.GEOLOCATION
+        
+    # === Security & Compliance ===
+    class SEC:
+        BASE = Category.SECURITY
+        ENCRY = Category.ENCRYPTION
+        FW = Category.FIREWALL # FIREWALL
+        AUDIT = Category.AUDIT
+        COMPLIANCE = Category.COMPLIANCE
+        VULN = Category.VULNERABILITY
+        FRAUD = Category.FRAUD
+        MFA = Category.MFA
+        RL = Category.RATE_LIMITER # RATE_LIMITER
+        GDPR = Category.GDPR
+        HIPAA = Category.HIPAA
+        PCI = Category.PCI_DSS
+        IDP = Category.IDP
+        
+    # === Storage & Files ===
+    class STORAGE:
+        FILE = Category.FILE
+        BASE = Category.STORAGE
+        BKP = Category.BACKUP # BACKUP
+        SYNC = Category.SYNC
+        UP = Category.UPLOAD # UPLOAD
+        DOWN = Category.DOWNLOAD # DOWNLOAD
+        ASSET = Category.ASSET
+        
+    # === Frontend & User Interface ===
+    class UI:
+        CLIENT = Category.CLIENT
+        BASE = Category.UI
+        UX = Category.UX
+        SPA = Category.SPA
+        SSR = Category.SSR
+        STATE = Category.STATE
+        COMP = Category.COMPONENT # COMPONENT
+        I18N = Category.I18N
+        
+    # === User Management ===
+    class USER:
+        BASE = Category.USER
+        SESSION = Category.SESSION
+        REG = Category.REGISTRATION
+        LOGIN = Category.LOGIN
+        LOGOUT = Category.LOGOUT
+        PROFILE = Category.PROFILE
+        
+    # === Monitoring & Observability ===
+    class MONITOR:
+        METRICS = Category.METRICS
+        PERF = Category.PERFORMANCE
+        HEALTH = Category.HEALTH
+        BASE = Category.MONITORING
+        TRACE = Category.TRACING
+        PROFILE = Category.PROFILING
+        
+    # === Messaging & Events ===
+    class MSG:
+        QUEUE = Category.QUEUE
+        EVENT = Category.EVENT
+        PUBSUB = Category.PUBSUB
+        KAFKA = Category.KAFKA
+        RABBIT = Category.RABBITMQ
+        REDIS = Category.REDIS
+        
+    # === Data Processing ===
+    class DATA:
+        ETL = Category.ETL
+        PIPE = Category.PIPELINE # PIPELINE
+        WORKER = Category.WORKER
+        CRON = Category.CRON
+        SCHED = Category.SCHEDULER
+        BATCH = Category.BATCH
+        STREAM = Category.STREAM
+        MAPPING = Category.MAPPING
+        TRANSFORM = Category.TRANSFORM
+        REPORT = Category.REPORTING
+        
+    # === Business Logic ===
+    class BIZ:
+        BASE = Category.BUSINESS
+        WORKFLOW = Category.WORKFLOW
+        TX = Category.TRANSACTION # TRANSACTION
+        ORDER = Category.ORDER
+        INVOICE = Category.INVOICE
+        SHIP = Category.SHIPPING # SHIPPING
+        ACC = Category.ACCOUNTING
+        INV = Category.INVENTORY
+        
+    # === AI & ML ===
+    class AI:
+        BASE = Category.AI
+        ML = Category.ML
+        TRAIN = Category.TRAINING
+        INFER = Category.INFERENCE
+        MODEL = Category.MODEL
+        
+    # === DevOps & Infrastructure ===
+    class DEVOPS:
+        DEPLOY = Category.DEPLOY
+        CICD = Category.CI_CD
+        DOCKER = Category.DOCKER
+        K8S = Category.KUBERNETES
+        TF = Category.TERRAFORM
+        ANSIBLE = Category.ANSIBLE
+        SERVERLESS = Category.SERVERLESS
+        CONTAINER = Category.CONTAINER
+        IAC = Category.IAC
+        VPC = Category.VPC
+        AS = Category.AUTOSCALING
+        PROVISION = Category.PROVISION
+        DEPROVISION = Category.DEPROVISION
+        
+    # === Testing & Quality ===
+    class TEST:
+        BASE = Category.TEST
+        UNIT = Category.UNITTEST
+        INTEG = Category.INTEGRATION
+        E2E = Category.E2E
+        LOAD = Category.LOAD_TEST
+        
+    # === Third Party Integrations ===
+    class TP:
+        SLACK = Category.SLACK
+        DISCORD = Category.DISCORD
+        TWILIO = Category.TWILIO
+        AWS = Category.AWS
+        GCP = Category.GCP
+        AZURE = Category.AZURE
+        EMAIL = Category.EMAIL
+        SMS = Category.SMS
+        PAYMENT = Category.PAYMENT
+        STRIPE = Category.STRIPE
+        PAYPAL = Category.PAYPAL
+        
+    # === Discord Bot Specific (DC) ===
+    class DC:
+        BOT = Category.BOT
+        COGS = Category.COGS
+        CMD = Category.COMMANDS
+        EVENT = Category.EVENTS
+        VOICE = Category.VOICE
+        GUILD = Category.GUILD
+        MEMBER = Category.MEMBER
+        CHANNEL = Category.CHANNEL
+        MSG = Category.MESSAGE
+        REACTION = Category.REACTION
+        MOD = Category.MODERATION
+        PERM = Category.PERMISSIONS
+        EMBED = Category.EMBED
+        SLASH = Category.SLASH_CMD
+        BUTTON = Category.BUTTON
+        MODAL = Category.MODAL
+        SELECT = Category.SELECT_MENU
+        AM = Category.AUTOMOD
+        WEBHOOK = Category.WEBHOOK
+        PRESENCE = Category.PRESENCE
+        INTENTS = Category.INTENTS
+        SHARDING = Category.SHARDING
+        GATEWAY = Category.GATEWAY # DC.GATEWAY
+        RL = Category.RATELIMIT # RATELIMIT
+        
+    # === Development & Core Control ===
+    class DEV:
+        BASE = Category.DEV
+        DEBUG = Category.DEBUG
+        START = Category.STARTUP
+        SHUT = Category.SHUTDOWN
+        MIG = Category.MIGRATION
+        UPDATE = Category.UPDATE
+        VER = Category.VERSION
 
 # ==========================================
 # TEIL 3: HAUPT-LOGGING KLASSE
@@ -550,6 +764,22 @@ class logger:
     """
     Professional Terminal Logger mit erweiterten Features
     """
+    
+    # NEU: Definiert die öffentliche Schnittstelle für Autovervollständigung.
+    # Dies hilft VS Code/Pylance, interne Methoden (_ und Standard-Dunder __) 
+    # auszublenden, wenn der Benutzer 'logger.' tippt.
+    __all__ = [
+        # Logging-Methoden
+        "trace", "debug", "info", "success", "loading", "processing", "progress", 
+        "waiting", "notice", "warn", "error", "critical", "fatal", "security",
+        
+        # Kontext-Management
+        "push_context", "pop_context",
+        
+        # Konfiguration & Management
+        "configure", "set_custom_format", "register_alert_handler", 
+        "start_session_recording", "stop_session_recording"
+    ]
     
     # === Konfiguration ===
     enabled: bool = True
@@ -1162,14 +1392,16 @@ class logger:
     @classmethod
     def push_context(cls, context: str):
         """Fügt einen Kontext-String zum Stack hinzu"""
-        cls._context_stack.append(context)
+        with cls._lock: # KORRIGIERT: Thread-Sicherheit hinzugefügt
+            cls._context_stack.append(context)
         
     @classmethod
     def pop_context(cls):
         """Entfernt den obersten Kontext-String vom Stack"""
-        if cls._context_stack:
-            return cls._context_stack.pop()
-        return None
+        with cls._lock: # KORRIGIERT: Thread-Sicherheit hinzugefügt
+            if cls._context_stack:
+                return cls._context_stack.pop()
+            return None
     
     # === Konfigurationsmethoden ===
     
