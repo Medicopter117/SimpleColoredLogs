@@ -1,3 +1,4 @@
+# Copyright (c) 2025 OPPRO.NET Network
 """
 logger.py
 
@@ -543,218 +544,241 @@ class CategoryColors:
         return cls.COLORS.get(category, Style.BRIGHT)
 
 # ==========================================
-# HIERARCHISCHE ZUGRIFFS-KLASSE (für Autocompletion)
+# GLOBALE ZUGRIFFS-KLASSEN (für DC.BOT, CORE.API)
+# ==========================================
+
+# NOTE: Die Klassen werden global definiert, um direkten Zugriff (z.B. DC.BOT) zu ermöglichen.
+
+class CORE:
+    """Core System & Runtime Accessor"""
+    API = Category.API
+    DB = Category.DATABASE
+    SERVER = Category.SERVER
+    CACHE = Category.CACHE
+    AUTH = Category.AUTH
+    SYS = Category.SYSTEM
+    CFG = Category.CONFIG
+    SCHEMA = Category.SCHEMA
+    IDX = Category.INDEX
+    QUERY = Category.QUERY
+    VIEW = Category.VIEW
+    RUNTIME = Category.RUNTIME
+    COMPILER = Category.COMPILER
+    DEP = Category.DEPENDENCY
+    CLI = Category.CLI
+
+class NET:
+    """Network & Communication Accessor"""
+    BASE = Category.NETWORK
+    HTTP = Category.HTTP
+    WS = Category.WEBSOCKET
+    GRPC = Category.GRPC
+    GQL = Category.GRAPHQL
+    REST = Category.REST
+    SOAP = Category.SOAP
+    LB = Category.LOAD_BALANCER
+    PROXY = Category.REVERSE_PROXY
+    DNS = Category.DNS
+    CDN = Category.CDN
+    GEO = Category.GEOLOCATION
+
+class SEC:
+    """Security & Compliance Accessor"""
+    BASE = Category.SECURITY
+    ENCRY = Category.ENCRYPTION
+    FW = Category.FIREWALL
+    AUDIT = Category.AUDIT
+    COMPLIANCE = Category.COMPLIANCE
+    VULN = Category.VULNERABILITY
+    FRAUD = Category.FRAUD
+    MFA = Category.MFA
+    RL = Category.RATE_LIMITER
+    GDPR = Category.GDPR
+    HIPAA = Category.HIPAA
+    PCI = Category.PCI_DSS
+    IDP = Category.IDP
+
+class STORAGE:
+    """Storage & Files Accessor"""
+    FILE = Category.FILE
+    BASE = Category.STORAGE
+    BKP = Category.BACKUP
+    SYNC = Category.SYNC
+    UP = Category.UPLOAD
+    DOWN = Category.DOWNLOAD
+    ASSET = Category.ASSET
+
+class UI:
+    """Frontend & User Interface Accessor"""
+    CLIENT = Category.CLIENT
+    BASE = Category.UI
+    UX = Category.UX
+    SPA = Category.SPA
+    SSR = Category.SSR
+    STATE = Category.STATE
+    COMP = Category.COMPONENT
+    I18N = Category.I18N
+
+class USER:
+    """User Management Accessor"""
+    BASE = Category.USER
+    SESSION = Category.SESSION
+    REG = Category.REGISTRATION
+    LOGIN = Category.LOGIN
+    LOGOUT = Category.LOGOUT
+    PROFILE = Category.PROFILE
+
+class MONITOR:
+    """Monitoring & Observability Accessor"""
+    METRICS = Category.METRICS
+    PERF = Category.PERFORMANCE
+    HEALTH = Category.HEALTH
+    BASE = Category.MONITORING
+    TRACE = Category.TRACING
+    PROFILE = Category.PROFILING
+
+class MSG:
+    """Messaging & Events Accessor"""
+    QUEUE = Category.QUEUE
+    EVENT = Category.EVENT
+    PUBSUB = Category.PUBSUB
+    KAFKA = Category.KAFKA
+    RABBIT = Category.RABBITMQ
+    REDIS = Category.REDIS
+
+class DATA:
+    """Data Processing Accessor"""
+    ETL = Category.ETL
+    PIPE = Category.PIPELINE
+    WORKER = Category.WORKER
+    CRON = Category.CRON
+    SCHED = Category.SCHEDULER
+    BATCH = Category.BATCH
+    STREAM = Category.STREAM
+    MAPPING = Category.MAPPING
+    TRANSFORM = Category.TRANSFORM
+    REPORT = Category.REPORTING
+
+class BIZ:
+    """Business Logic Accessor"""
+    BASE = Category.BUSINESS
+    WORKFLOW = Category.WORKFLOW
+    TX = Category.TRANSACTION
+    ORDER = Category.ORDER
+    INVOICE = Category.INVOICE
+    SHIP = Category.SHIPPING
+    ACC = Category.ACCOUNTING
+    INV = Category.INVENTORY
+
+class AI:
+    """AI & ML Accessor"""
+    BASE = Category.AI
+    ML = Category.ML
+    TRAIN = Category.TRAINING
+    INFER = Category.INFERENCE
+    MODEL = Category.MODEL
+
+class DEVOPS:
+    """DevOps & Infrastructure Accessor"""
+    DEPLOY = Category.DEPLOY
+    CICD = Category.CI_CD
+    DOCKER = Category.DOCKER
+    K8S = Category.KUBERNETES
+    TF = Category.TERRAFORM
+    ANSIBLE = Category.ANSIBLE
+    SERVERLESS = Category.SERVERLESS
+    CONTAINER = Category.CONTAINER
+    IAC = Category.IAC
+    VPC = Category.VPC
+    AS = Category.AUTOSCALING
+    PROVISION = Category.PROVISION
+    DEPROVISION = Category.DEPROVISION
+
+class TEST:
+    """Testing & Quality Accessor"""
+    BASE = Category.TEST
+    UNIT = Category.UNITTEST
+    INTEG = Category.INTEGRATION
+    E2E = Category.E2E
+    LOAD = Category.LOAD_TEST
+
+class TP:
+    """Third Party Integrations Accessor"""
+    SLACK = Category.SLACK
+    DISCORD = Category.DISCORD
+    TWILIO = Category.TWILIO
+    AWS = Category.AWS
+    GCP = Category.GCP
+    AZURE = Category.AZURE
+    EMAIL = Category.EMAIL
+    SMS = Category.SMS
+    PAYMENT = Category.PAYMENT
+    STRIPE = Category.STRIPE
+    PAYPAL = Category.PAYPAL
+
+class DC:
+    """Discord Bot Specific Accessor (Flat)"""
+    BOT = Category.BOT
+    COGS = Category.COGS
+    CMD = Category.COMMANDS
+    EVENT = Category.EVENTS
+    VOICE = Category.VOICE
+    GUILD = Category.GUILD
+    MEMBER = Category.MEMBER
+    CHANNEL = Category.CHANNEL
+    MSG = Category.MESSAGE
+    REACTION = Category.REACTION
+    MOD = Category.MODERATION
+    PERM = Category.PERMISSIONS
+    EMBED = Category.EMBED
+    SLASH = Category.SLASH_CMD
+    BUTTON = Category.BUTTON
+    MODAL = Category.MODAL
+    SELECT = Category.SELECT_MENU
+    AM = Category.AUTOMOD
+    WEBHOOK = Category.WEBHOOK
+    PRESENCE = Category.PRESENCE
+    INTENTS = Category.INTENTS
+    SHARDING = Category.SHARDING
+    GATEWAY = Category.GATEWAY
+    RL = Category.RATELIMIT
+
+class DEV:
+    """Development & Core Control Accessor"""
+    BASE = Category.DEV
+    DEBUG = Category.DEBUG
+    START = Category.STARTUP
+    SHUT = Category.SHUTDOWN
+    MIG = Category.MIGRATION
+    UPDATE = Category.UPDATE
+    VER = Category.VERSION
+
+
+# ==========================================
+# HIERARCHISCHE ZUGRIFFS-KLASSE (Alias C.DC.BOT)
 # ==========================================
 
 class C:
     """
     Shorthand für hierarchischen Kategorie-Zugriff (z.B. C.CORE.API).
-    Jeder Leaf-Knoten verweist auf das entsprechende Category-Enum-Mitglied.
+    Verweist auf die globalen Accessor-Klassen.
     """
-    
-    # === Core System & Runtime ===
-    class CORE:
-        API = Category.API
-        DB = Category.DATABASE
-        SERVER = Category.SERVER
-        CACHE = Category.CACHE
-        AUTH = Category.AUTH
-        SYS = Category.SYSTEM
-        CFG = Category.CONFIG
-        SCHEMA = Category.SCHEMA
-        IDX = Category.INDEX
-        QUERY = Category.QUERY
-        VIEW = Category.VIEW
-        RUNTIME = Category.RUNTIME
-        COMPILER = Category.COMPILER
-        DEP = Category.DEPENDENCY
-        CLI = Category.CLI
-        
-    # === Network & Communication ===
-    class NET:
-        BASE = Category.NETWORK
-        HTTP = Category.HTTP
-        WS = Category.WEBSOCKET # WEBSOCKET
-        GRPC = Category.GRPC
-        GQL = Category.GRAPHQL
-        REST = Category.REST
-        SOAP = Category.SOAP
-        LB = Category.LOAD_BALANCER # LOAD_BALANCER
-        PROXY = Category.REVERSE_PROXY
-        DNS = Category.DNS
-        CDN = Category.CDN
-        GEO = Category.GEOLOCATION
-        
-    # === Security & Compliance ===
-    class SEC:
-        BASE = Category.SECURITY
-        ENCRY = Category.ENCRYPTION
-        FW = Category.FIREWALL # FIREWALL
-        AUDIT = Category.AUDIT
-        COMPLIANCE = Category.COMPLIANCE
-        VULN = Category.VULNERABILITY
-        FRAUD = Category.FRAUD
-        MFA = Category.MFA
-        RL = Category.RATE_LIMITER # RATE_LIMITER
-        GDPR = Category.GDPR
-        HIPAA = Category.HIPAA
-        PCI = Category.PCI_DSS
-        IDP = Category.IDP
-        
-    # === Storage & Files ===
-    class STORAGE:
-        FILE = Category.FILE
-        BASE = Category.STORAGE
-        BKP = Category.BACKUP # BACKUP
-        SYNC = Category.SYNC
-        UP = Category.UPLOAD # UPLOAD
-        DOWN = Category.DOWNLOAD # DOWNLOAD
-        ASSET = Category.ASSET
-        
-    # === Frontend & User Interface ===
-    class UI:
-        CLIENT = Category.CLIENT
-        BASE = Category.UI
-        UX = Category.UX
-        SPA = Category.SPA
-        SSR = Category.SSR
-        STATE = Category.STATE
-        COMP = Category.COMPONENT # COMPONENT
-        I18N = Category.I18N
-        
-    # === User Management ===
-    class USER:
-        BASE = Category.USER
-        SESSION = Category.SESSION
-        REG = Category.REGISTRATION
-        LOGIN = Category.LOGIN
-        LOGOUT = Category.LOGOUT
-        PROFILE = Category.PROFILE
-        
-    # === Monitoring & Observability ===
-    class MONITOR:
-        METRICS = Category.METRICS
-        PERF = Category.PERFORMANCE
-        HEALTH = Category.HEALTH
-        BASE = Category.MONITORING
-        TRACE = Category.TRACING
-        PROFILE = Category.PROFILING
-        
-    # === Messaging & Events ===
-    class MSG:
-        QUEUE = Category.QUEUE
-        EVENT = Category.EVENT
-        PUBSUB = Category.PUBSUB
-        KAFKA = Category.KAFKA
-        RABBIT = Category.RABBITMQ
-        REDIS = Category.REDIS
-        
-    # === Data Processing ===
-    class DATA:
-        ETL = Category.ETL
-        PIPE = Category.PIPELINE # PIPELINE
-        WORKER = Category.WORKER
-        CRON = Category.CRON
-        SCHED = Category.SCHEDULER
-        BATCH = Category.BATCH
-        STREAM = Category.STREAM
-        MAPPING = Category.MAPPING
-        TRANSFORM = Category.TRANSFORM
-        REPORT = Category.REPORTING
-        
-    # === Business Logic ===
-    class BIZ:
-        BASE = Category.BUSINESS
-        WORKFLOW = Category.WORKFLOW
-        TX = Category.TRANSACTION # TRANSACTION
-        ORDER = Category.ORDER
-        INVOICE = Category.INVOICE
-        SHIP = Category.SHIPPING # SHIPPING
-        ACC = Category.ACCOUNTING
-        INV = Category.INVENTORY
-        
-    # === AI & ML ===
-    class AI:
-        BASE = Category.AI
-        ML = Category.ML
-        TRAIN = Category.TRAINING
-        INFER = Category.INFERENCE
-        MODEL = Category.MODEL
-        
-    # === DevOps & Infrastructure ===
-    class DEVOPS:
-        DEPLOY = Category.DEPLOY
-        CICD = Category.CI_CD
-        DOCKER = Category.DOCKER
-        K8S = Category.KUBERNETES
-        TF = Category.TERRAFORM
-        ANSIBLE = Category.ANSIBLE
-        SERVERLESS = Category.SERVERLESS
-        CONTAINER = Category.CONTAINER
-        IAC = Category.IAC
-        VPC = Category.VPC
-        AS = Category.AUTOSCALING
-        PROVISION = Category.PROVISION
-        DEPROVISION = Category.DEPROVISION
-        
-    # === Testing & Quality ===
-    class TEST:
-        BASE = Category.TEST
-        UNIT = Category.UNITTEST
-        INTEG = Category.INTEGRATION
-        E2E = Category.E2E
-        LOAD = Category.LOAD_TEST
-        
-    # === Third Party Integrations ===
-    class TP:
-        SLACK = Category.SLACK
-        DISCORD = Category.DISCORD
-        TWILIO = Category.TWILIO
-        AWS = Category.AWS
-        GCP = Category.GCP
-        AZURE = Category.AZURE
-        EMAIL = Category.EMAIL
-        SMS = Category.SMS
-        PAYMENT = Category.PAYMENT
-        STRIPE = Category.STRIPE
-        PAYPAL = Category.PAYPAL
-        
-    # === Discord Bot Specific (DC) ===
-    class DC:
-        BOT = Category.BOT
-        COGS = Category.COGS
-        CMD = Category.COMMANDS
-        EVENT = Category.EVENTS
-        VOICE = Category.VOICE
-        GUILD = Category.GUILD
-        MEMBER = Category.MEMBER
-        CHANNEL = Category.CHANNEL
-        MSG = Category.MESSAGE
-        REACTION = Category.REACTION
-        MOD = Category.MODERATION
-        PERM = Category.PERMISSIONS
-        EMBED = Category.EMBED
-        SLASH = Category.SLASH_CMD
-        BUTTON = Category.BUTTON
-        MODAL = Category.MODAL
-        SELECT = Category.SELECT_MENU
-        AM = Category.AUTOMOD
-        WEBHOOK = Category.WEBHOOK
-        PRESENCE = Category.PRESENCE
-        INTENTS = Category.INTENTS
-        SHARDING = Category.SHARDING
-        GATEWAY = Category.GATEWAY # DC.GATEWAY
-        RL = Category.RATELIMIT # RATELIMIT
-        
-    # === Development & Core Control ===
-    class DEV:
-        BASE = Category.DEV
-        DEBUG = Category.DEBUG
-        START = Category.STARTUP
-        SHUT = Category.SHUTDOWN
-        MIG = Category.MIGRATION
-        UPDATE = Category.UPDATE
-        VER = Category.VERSION
+    CORE = CORE
+    NET = NET
+    SEC = SEC
+    STORAGE = STORAGE
+    UI = UI
+    USER = USER
+    MONITOR = MONITOR
+    MSG = MSG
+    DATA = DATA
+    BIZ = BIZ
+    AI = AI
+    DEVOPS = DEVOPS
+    TEST = TEST
+    TP = TP
+    DC = DC
+    DEV = DEV
 
 # ==========================================
 # TEIL 3: HAUPT-LOGGING KLASSE
@@ -1086,7 +1110,8 @@ class logger:
         level_part = f"{level_color}{Style.BRIGHT}[{padded_level}]{Style.RESET_ALL}"
         
         # Category mit Farbe
-        category_part = f"{category_color}[{category.value}]{Style.RESET_ALL}"
+        category_value = str(category.value) if hasattr(category, 'value') else str(category)
+        category_part = f"{category_color}[{category_value}]{Style.RESET_ALL}"
         
         # Kontext
         context_part = ""
@@ -1162,9 +1187,15 @@ class logger:
         
         # --- FIX: Robustheit gegenüber String-Inputs ---
         is_custom_category = False
+        
+        # Wenn der Input eine der globalen Accessor-Klassen ist (z.B. DC.BOT), 
+        # ist es bereits der String-Wert des Enums. Wenn es ein Enum ist (Category.BOT), 
+        # muss es nicht konvertiert werden. Wenn es ein String ist ("BOT"), wird es unten behandelt.
+        
         if isinstance(category, str):
             try:
                 # Versuche, den String in ein Category-Enum umzuwandeln (z.B. "API")
+                # Dies ist wichtig für die Farbsuche, die Category-Enums benötigt.
                 category = Category(category)
             except ValueError:
                 # Fallback für unbekannte Strings (z.B. "INIT"): 
@@ -1173,6 +1204,13 @@ class logger:
                     def __str__(self): return self.value
                 category = CustomCategory(category)
                 is_custom_category = True
+        elif isinstance(category, (CORE, NET, SEC, STORAGE, UI, USER, MONITOR, MSG, DATA, BIZ, AI, DEVOPS, TEST, TP, DC, DEV)):
+             # Dies sollte *nicht* passieren, da die Accessor-Klassen auf Category-Enum-Werte (Strings) verweisen,
+             # aber falls ein Benutzer die Klasse selbst übergibt, behandeln wir dies hier.
+             # Da DC.BOT direkt den String "BOT" liefert, wird dies immer als String behandelt.
+             # Der Code hier bleibt unverändert, da die Klassen-Struktur bereits den String-Wert liefert.
+             pass # Wir gehen davon aus, dass der Input bereits den korrekten Wert enthält (wie in Python üblich).
+             
         # -----------------------------------------------
 
         if not cls._should_log_category(category):
@@ -1181,7 +1219,7 @@ class logger:
         if not cls._should_sample():
             return
             
-        category_value = str(category.value) if not is_custom_category else category.value
+        category_value = str(category.value) if hasattr(category, 'value') else str(category)
         if not cls._check_rate_limit(category_value):
             return
             
@@ -1201,6 +1239,7 @@ class logger:
             elif level in cls._custom_formats:
                 formatted_message = cls._format_custom(level, category, message, metadata, extra)
             else:
+                # `_format_colored` verwendet `CategoryColors.get_color(category)`
                 formatted_message = cls._format_colored(level, category, message, metadata, extra)
             
             # 4. Speichern und Ausgeben
